@@ -64,40 +64,74 @@ public class process {
     }
 
     public void refreshServer(){
+
+        //Primary Servers refresh
         for(server x: pServers){
             if(x.getStatus().equals("busy")){
               
 
                 if(x.getRemaining_time() != 0){
                     x.setRemaining_time(x.getRemaining_time()-1);
-                    System.out.println(x.getServer_number() +"server left " + x.getRemaining_time() +" min");
+                    System.out.println(x.getServer_number() +"P_server left " + x.getRemaining_time() +" min");
+                }
+                
+                if(x.getRemaining_time() == 0){
+                    sQ.enqueue(x.getCurrentCus());
+                    System.out.println("Goes to sQueue");
+                    x.setCurrentCus(null);
+                    x.setStatus("available");
+                    System.out.println("Primary Done Serving");
+                    
+                    
+                }
+            }else{
+                System.out.println(x.getServer_number() +"P_server left " + x.getRemaining_time() +" min");
+                x.setIdle_time(x.getIdle_time()+1);
+            }
+        }
+        //Secondary Servers refresh
+        for(server x: sServers){
+            if(x.getStatus().equals("busy")){
+              
+
+                if(x.getRemaining_time() != 0){
+                    x.setRemaining_time(x.getRemaining_time()-1);
+                    System.out.println(x.getServer_number() +"S_server left " + x.getRemaining_time() +" min");
                 }
                 
                 if(x.getRemaining_time() == 0){
                     x.setCurrentCus(null);
                     x.setStatus("available");
-                    System.out.println("Done Serving");
+                    System.out.println("Secondary Done Serving");
+                    
                     
                 }
             }else{
-                System.out.println(x.getServer_number() +"server left " + x.getRemaining_time() +" min");
+                System.out.println(x.getServer_number() +"S_server left " + x.getRemaining_time() +" min");
                 x.setIdle_time(x.getIdle_time()+1);
             }
         }
+
+        
     }
 
-    public void check(queue pQ, int i){
+    public void check(int i){
         System.out.println("loop checking");
         int y =0;
+        int b =0;
         for(server x:pServers){
             if(x.getStatus().equals("available")){
                 y+=1;
         }
-        if(y == pServers.length && pQ.isEmpty() && i == customers.size()-1){
+        }
+        for(server z:sServers){
+            if(z.getStatus().equals("available")){
+                b+=1;
+        }
+        if((y == pServers.length && b == sServers.length) && (pQ.isEmpty() && sQ.isEmpty()) && i == customers.size()-1){
             System.out.println("loop End");
             loop = false;
         }
-
         }
     }
 
@@ -127,19 +161,19 @@ public class process {
                 System.out.println("customer in pq min:"+ x.getpQueue_minute()+" min");
                 System.out.println("same");
                 pQ.enqueue(x);
-                System.out.println("Goes to queue");
+                System.out.println("Goes to Pqueue");
 
                 for(server ps : pServers){
 
                     if(ps.getStatus().equals("available")&& !pQ.isEmpty()){
 
                         customer Customer = pQ.dequeue();
-                        System.out.println("customer:"+ Customer.getpQueue_minute()+" min reach to "+ ps.getServer_number()+" server");
+                        System.out.println("customer:"+ Customer.getpQueue_minute()+" min reach to "+ ps.getServer_number()+"Primary server");
                         ps.setCurrentCus(Customer);
                         ps.setRemaining_time(Customer.getpQueue_minute());
                         ps.setStatus("busy");
                     }else{
-                        System.out.println("customer "+ x.getpQueue_minute()+ "min cannot go into "+ps.getServer_number()+" server");
+                        System.out.println("customer "+ x.getpQueue_minute()+ "min cannot go into "+ps.getServer_number()+"Primary server");
 
                     }
                     
@@ -168,7 +202,7 @@ public class process {
                         if(ps.getStatus().equals("available") && !pQ.isEmpty()){
 
                             customer Customer = pQ.dequeue();
-                            System.out.println("customer:"+ Customer.getpQueue_minute()+" min reach to "+ ps.getServer_number()+" server");
+                            System.out.println("customer:"+ Customer.getpQueue_minute()+" min reach to "+ ps.getServer_number()+"Primary server");
                             ps.setCurrentCus(Customer);
                             ps.setRemaining_time(Customer.getpQueue_minute());
                             ps.setStatus("busy");
@@ -177,7 +211,33 @@ public class process {
                         }
                     }
                 }
-            check(pQ,i);
+
+
+                if(!sQ.isEmpty()){
+                        
+
+                        for(server ss : sServers){
+
+                        if(ss.getStatus().equals("available") && !sQ.isEmpty()){
+
+                            customer Customer = sQ.dequeue();
+                            System.out.println("customer:"+ Customer.getsQueue_minute()+" min reach to "+ ss.getServer_number()+"Secondary server");
+                            ss.setCurrentCus(Customer);
+                            ss.setRemaining_time(Customer.getsQueue_minute());
+                            ss.setStatus("busy");
+                            System.out.println(sServers.length);
+                        }else{
+                        System.out.println("customer "+ x.getsQueue_minute()+ "min cannot go into "+ss.getServer_number()+"Secondary server");
+
+                    }
+                        }
+                    }
+
+
+
+
+
+            check(i);
             System.out.println();
             } catch (Exception e) {
                 // TODO: handle exception
