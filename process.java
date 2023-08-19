@@ -16,16 +16,11 @@ public class process {
     private ArrayList <customer> customers = new ArrayList<customer>();
 
 
-   
-
-
     public void getServer(){
         for(server x : sServers){
             System.out.println(x.getServer_number());
         }
     }
-
-
     public void  buildServer(int pCount, int sCount){
         pServers = new server[pCount];
         for(int i = 1; i <= pCount; i++){
@@ -40,9 +35,6 @@ public class process {
         }
        
     }
-
-
-
     public void readFile(String fileName) {
         try {
             File file = new File(fileName);
@@ -75,8 +67,12 @@ public class process {
         for(server x: pServers){
             if(x.getStatus().equals("busy")){
               
-                x.setRemaining_time(x.getRemaining_time()-1);
-                System.out.println(x.getServer_number() +"server left " + x.getRemaining_time() +" min");
+
+                if(x.getRemaining_time() != 0){
+                    x.setRemaining_time(x.getRemaining_time()-1);
+                    System.out.println(x.getServer_number() +"server left " + x.getRemaining_time() +" min");
+                }
+                
                 if(x.getRemaining_time() == 0){
                     x.setCurrentCus(null);
                     x.setStatus("available");
@@ -102,12 +98,8 @@ public class process {
             loop = false;
         }
 
+        }
     }
-}
-
-    
-
-
 
     public void run(){
         pQ = new queue(customers.size());
@@ -118,8 +110,6 @@ public class process {
         boolean sameMin = false;
         
         while (loop) {
-             
-
             try {
                 x = customers.get(i);
                 System.out.println("min: " + min);
@@ -131,19 +121,13 @@ public class process {
                 System.out.println();
                 }
 
-                
-               
                 if(x.getCustomer_arriving_time() == min){
 
                 System.out.println("customer:"+ x.getCustomer_arriving_time()+" min");
                 System.out.println("customer in pq min:"+ x.getpQueue_minute()+" min");
                 System.out.println("same");
-               
                 pQ.enqueue(x);
                 System.out.println("Goes to queue");
-
-                
-
 
                 for(server ps : pServers){
 
@@ -154,24 +138,16 @@ public class process {
                         ps.setCurrentCus(Customer);
                         ps.setRemaining_time(Customer.getpQueue_minute());
                         ps.setStatus("busy");
-
-                        
-                        
-                        break;
-                        
                     }else{
-                        System.out.println("customer "+ x.getpQueue_minute()+ "min cannot go into "+ps.getServer_number()+" server , it is busy");
+                        System.out.println("customer "+ x.getpQueue_minute()+ "min cannot go into "+ps.getServer_number()+" server");
 
                     }
                     
                 }
-                
-
                 min+=1;
                 sameMin = false;
                 if(i == customers.size()-1){
                     System.out.println("No customers in array!");
-
                 }else if(x.getCustomer_arriving_time() == customers.get(i+1).getCustomer_arriving_time()){
                     min-=1;
                     i+=1;
@@ -181,45 +157,30 @@ public class process {
                     
                 }
 
-            }else if(x.getCustomer_arriving_time() != min){
-                System.out.println("customer:"+ x.getCustomer_arriving_time()+" min");
-                System.out.println("Differnet");
-                min+=1;
+                }else if(x.getCustomer_arriving_time() != min){
+                    System.out.println("customer:"+ x.getCustomer_arriving_time()+" min");
+                    System.out.println("Differnet");
+                    min+=1;
 
-                if(!pQ.isEmpty()){
-                    for(server ps : pServers){
+                    if(!pQ.isEmpty()){
+                        for(server ps : pServers){
 
-                    if(ps.getStatus().equals("available") && !pQ.isEmpty()){
+                        if(ps.getStatus().equals("available") && !pQ.isEmpty()){
 
-                        customer Customer = pQ.dequeue();
-                        System.out.println("customer:"+ Customer.getpQueue_minute()+" min reach to "+ ps.getServer_number()+" server");
-                        ps.setCurrentCus(Customer);
-                        ps.setRemaining_time(Customer.getpQueue_minute());
-                        ps.setStatus("busy");
-                        
+                            customer Customer = pQ.dequeue();
+                            System.out.println("customer:"+ Customer.getpQueue_minute()+" min reach to "+ ps.getServer_number()+" server");
+                            ps.setCurrentCus(Customer);
+                            ps.setRemaining_time(Customer.getpQueue_minute());
+                            ps.setStatus("busy");
+                            
+                        }
+                        }
                     }
-
                 }
-                }
-
-                
-               
-        }
-
-
-
-           
             check(pQ,i);
             System.out.println();
-           
-
-
-           
             } catch (Exception e) {
                 // TODO: handle exception
-               
-               
-              
             }
             
         }
